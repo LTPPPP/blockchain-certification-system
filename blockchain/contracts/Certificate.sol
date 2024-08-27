@@ -8,7 +8,7 @@ contract CertificateSystem {
         string issuerName; // Name of the institution issuing the certificate
         uint256 issueDate; // Date when the certificate was issued
         string certificateId; // Unique identifier for the certificate
-        string signature; // Signature of the certificate
+        string signatureOfInstitution; // Signature of the certificate
         string degreeHash; // Hash of the degree
         string degreeUrl; // URL of the degree
     }
@@ -53,7 +53,7 @@ contract CertificateSystem {
         string memory issuerName,
         uint256 issueDate,
         string memory certificateId,
-        string memory signature,
+        string memory signatureOfInstitution,
         string memory degreeHash,
         string memory degreeUrl
     ) public onlyInstitution {
@@ -68,7 +68,7 @@ contract CertificateSystem {
             issuerName,
             issueDate,
             certificateId,
-            signature,
+            signatureOfInstitution,
             degreeHash,
             degreeUrl
         ); // Create a new certificate and store it in the certificates mapping
