@@ -11,6 +11,7 @@ package com.mycompany.account_management;
 public class Account_Information_Management {
 
     private String userName;
+    private String email;
     private String dateOfBirth;
     private String userGender;
     private String address;
@@ -18,11 +19,20 @@ public class Account_Information_Management {
     public Account_Information_Management() {
     }
 
-    public Account_Information_Management(String userName, String dateOfBirth, String userGender, String address) {
+    public Account_Information_Management(String userName, String email, String dateOfBirth, String userGender, String address) {
         this.userName = userName;
+        this.email = email;
         this.dateOfBirth = dateOfBirth;
         this.userGender = userGender;
         this.address = address;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getUserName() {

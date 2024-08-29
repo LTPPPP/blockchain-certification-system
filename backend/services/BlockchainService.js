@@ -1,7 +1,13 @@
+// backend/services/BlockchainService.js
+
 const Web3 = require('web3');
 const contractABI = require('../config/contractABI.json');
 const config = require('../config/blockchain');
 
+/**
+ * Represents a service for interacting with the blockchain.
+ * @class
+ */
 class BlockchainService {
     constructor() {
         this.web3 = new Web3(config.providerUrl);
@@ -16,6 +22,7 @@ class BlockchainService {
         const {
             student,
             studentName,
+            studentEmail,
             degreeName,
             issuerName,
             issueDate,
@@ -28,6 +35,7 @@ class BlockchainService {
         return await this.contract.methods.issueCertificate(
             student,
             studentName,
+            studentEmail,
             degreeName,
             issuerName,
             issueDate,

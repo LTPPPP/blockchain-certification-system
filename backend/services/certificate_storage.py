@@ -1,91 +1,109 @@
 import json
+import hashlib
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
-import hashlib
 from web3 import Web3
 
-class CertificateEncryption:
-    def __init__(self, blockchain_address):
-        self.key = get_random_bytes(32)  # AES-256 key
-        self.w3 = Web3(Web3.HTTPProvider(blockchain_address))
-    
-    def encrypt_data(self, data):
-        cipher = AES.new(self.key, AES.MODE_ECB)
-        encrypted_data = cipher.encrypt(pad(json.dumps(data).encode(), AES.block_size))
-        return encrypted_data
-    
-    def decrypt_data(self, encrypted_data):
-        cipher = AES.new(self.key, AES.MODE_ECB)
-        decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
-        return json.loads(decrypted_data)
-    
-    def create_hash(self, encrypted_data):
-        return hashlib.sha256(encrypted_data).hexdigest()
-    
-    def store_on_blockchain(self, hash_value, smart_contract_address, account_address, private_key):
-        # Giả định rằng smart contract có một hàm storeHash(bytes32 hash)
-        contract_abi = [{"inputs": [{"name": "hash", "type": "bytes32"}], "name": "storeHash", "type": "function"}]
-        contract = self.w3.eth.contract(address=smart_contract_address, abi=contract_abi)
-        
-        # Chuẩn bị giao dịch
-        transaction = contract.functions.storeHash(hash_value).buildTransaction({
-            'from': account_address,
-            'nonce': self.w3.eth.getTransactionCount(account_address),
-        })
-        
-        # Ký và gửi giao dịch
-        signed_txn = self.w3.eth.account.signTransaction(transaction, private_key)
-        tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        
-        # Đợi xác nhận giao dịch
-        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
-        return tx_receipt
+# Kết nối đến mạng Ethereum (ví dụ: Ganache cho môi trường phát triển)
+w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 
-def process_certificate(personal_info, certificate_info, blockchain_address, smart_contract_address, account_address, private_key):
-    cert_encryption = CertificateEncryption(blockchain_address)
+# Địa chỉ của smart contract đã triển khai
+CONTRACT_ADDRESS = ''
+
+# ABI của smart contract
+CONTRACT_ABI = [
+    {
+        # "inputs": [
+        #     {"name": "tokenHash", "type": "bytes32"},
+        #     {"name": "encryptedData", "type": "string"}
+        # ],
+        # "name": "storeCertificate",
+        # "outputs": [],
+        # "stateMutability": "nonpayable",
+        # "type": "function"
+    }
+]
+
+# Cấu trúc dữ liệu chứng chỉ
+class Certificate:
+    def __init__(self, student_name, student_email, degree_name, issuer_name, 
+                 issue_date, certificate_id, signature_of_institution, 
+                 degree_hash, degree_url):
+        self.student_name = student_name
+        self.student_email = student_email
+        self.degree_name = degree_name
+        self.issuer_name = issuer_name
+        self.issue_date = issue_date
+        self.certificate_id = certificate_id
+        self.signature_of_institution = signature_of_institution
+        self.degree_hash = degree_hash
+        self.degree_url = degree_url
     
-    # Kết hợp thông tin cá nhân và bằng cấp
-    full_info = {**personal_info, **certificate_info}
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+# Hàm mã hóa thông tin bằng AES
+def encrypt_data(data, key):
+    cipher = AES.new(key, AES.MODE_GCM)
+    ciphertext, tag = cipher.encrypt_and_digest(data.encode())
+    return cipher.nonce + tag + ciphertext
+
+# Hàm tạo hash SHA-256
+def create_hash(data):
+    if isinstance(data, str):
+        return hashlib.sha256(data.encode()).hexdigest()
+    elif isinstance(data, bytes):
+        return hashlib.sha256(data).hexdigest()
+    else:
+        raise ValueError("Input must be string or bytes")
+
+# Hàm lưu trữ token trên blockchain
+def store_on_blockchain(token_hash, encrypted_data):
+    contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
+    tx_hash = contract.functions.storeCertificate(
+        Web3.to_bytes(hexstr=token_hash),
+        Web3.to_hex(encrypted_data)
+    ).transact({'from': w3.eth.accounts[0]})
+    return w3.eth.wait_for_transaction_receipt(tx_hash)
+
+# Quy trình chính
+def process_certificate(certificate):
+    # 1. Chuyển đổi chứng chỉ thành JSON
+    certificate_json = certificate.to_json()
     
-    # Mã hóa dữ liệu
-    encrypted_data = cert_encryption.encrypt_data(full_info)
+    # 2. Mã hóa thông tin
+    encryption_key = get_random_bytes(32)  # AES-256 key
+    encrypted_data = encrypt_data(certificate_json, encryption_key)
     
-    # Tạo hash
-    hash_value = cert_encryption.create_hash(encrypted_data)
+    # 3. Tạo hash của thông tin đã mã hóa
+    token_hash = create_hash(encrypted_data)
     
-    # Lưu trữ hash trên blockchain
-    tx_receipt = cert_encryption.store_on_blockchain(hash_value, smart_contract_address, account_address, private_key)
+    # 4. Lưu trữ token trên blockchain
+    tx_receipt = store_on_blockchain(token_hash, encrypted_data)
     
     return {
-        "encrypted_data": encrypted_data.hex(),
-        "hash": hash_value,
-        "transaction_receipt": tx_receipt.transactionHash.hex()
+        'token_hash': token_hash,
+        'encryption_key': encryption_key.hex(),
+        'tx_receipt': tx_receipt
     }
 
 # Sử dụng
-personal_info = {
-    # "ho_ten": "Nguyễn Văn A",
-    # "ngay_sinh": "1990-01-01",
-    # "gioi_tinh": "Nam",
-    # "dia_chi": "Hà Nội",
-    # "don_vi_hoc": "Đại học ABC"
-}
+certificate = Certificate(
+    student_name="Nguyễn Văn A",
+    student_email="nguyenvana@example.com",
+    degree_name="Cử nhân Công nghệ Thông tin",
+    issuer_name="Đại học XYZ",
+    issue_date=1630454400,  # Unix timestamp for 2021-09-01
+    certificate_id="XYZ-2021-001",
+    signature_of_institution="0x1234...5678",  # Giả định chữ ký số
+    degree_hash="0xabcd...ef01",  # Hash của nội dung bằng cấp
+    degree_url="https://example.com/degrees/XYZ-2021-001"
+)
 
-certificate_info = {
-    # "ten_bang_cap": "Cử nhân Khoa học Máy tính",
-    # "don_vi_cap_bang": "Đại học ABC",
-    # "ngay_cap": "2022-06-30",
-    # "so_hieu": "CS12345",
-    # "chu_ky": "signed_by_rector",
-    # "hinh_anh_bang_cap": "https://example.com/bangcap.jpg",
-    # "duong_dan_luu_tru": "https://example.com/storage/CS12345"
-}
-
-blockchain_address = "https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
-smart_contract_address = "0x1234567890123456789012345678901234567890"
-account_address = "0x9876543210987654321098765432109876543210"
-private_key = "your_private_key_here"
-
-result = process_certificate(personal_info, certificate_info, blockchain_address, smart_contract_address, account_address, private_key)
-print(result)
+try:
+    result = process_certificate(certificate)
+    print(f"Token Hash: {result['token_hash']}")
+    print(f"Encryption Key: {result['encryption_key']}")
+    print(f"Transaction Hash: {result['tx_receipt']['transactionHash'].hex()}")
+except Exception as e:
+    print(f"An error occurred: {str(e)}")
