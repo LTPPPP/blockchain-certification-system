@@ -18,6 +18,13 @@ contract CertificateSystem {
     // Struct to represent an educational institution
     struct EducationalInstitution {
         string educationalInstitutionName; // Name of the institution
+        string typeOfInstitution; // Type of the institution
+        uint256 taxCodeOfInstitution; // Tax code of the institution
+        string addressOfInstitution; // Address of the institution
+        string numberPhoneOfInstitution; // Phone number of the institution
+        string emailOfInstitution; // Email of the institution
+        string websiteOfInstitution; // Website of the institution
+        string privacyPolicyOfInstitution; // Privacy policy of the institution
         bool isAuthorized; // Flag to indicate if the institution is authorized
     }
 
@@ -67,11 +74,29 @@ contract CertificateSystem {
 
     // Function to add an institution
     function addInstitution(
-        address institutionAddress,
-        string memory name
+        string memory educationalInstitutionName, // Name of the institution
+        string memory typeOfInstitution, // Type of the institution
+        uint256 taxCodeOfInstitution, // Tax code of the institution
+        string memory addressOfInstitution, // Address of the institution
+        string memory numberPhoneOfInstitution, // Phone number of the institution
+        string memory emailOfInstitution, // Email of the institution
+        string memory websiteOfInstitution, // Website of the institution
+        string memory privacyPolicyOfInstitution, // Privacy policy of the institution
+        bool isAuthorized // Flag to indicate if the institution is authorized
     ) public onlyAdmin {
-        institutions[institutionAddress] = EducationalInstitution(name, true);
-        emit InstitutionAdded(institutionAddress, name);
+        address institutionAddress = msg.sender; // Declare and assign the institutionAddress variable
+        institutions[institutionAddress] = EducationalInstitution(
+            educationalInstitutionName,
+            typeOfInstitution,
+            taxCodeOfInstitution,
+            addressOfInstitution,
+            numberPhoneOfInstitution,
+            emailOfInstitution,
+            websiteOfInstitution,
+            privacyPolicyOfInstitution,
+            isAuthorized
+        );
+        emit InstitutionAdded(institutionAddress, educationalInstitutionName);
     }
 
     // Function to remove an institution

@@ -1,28 +1,15 @@
 import json
+import re
 import hashlib
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from web3 import Web3
+from datetime import datetime
+from APII import CONTRACT_ABI, CONTRACT_ADDRESS
 
 # Kết nối đến mạng Ethereum (ví dụ: Ganache cho môi trường phát triển)
 w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 
-# Địa chỉ của smart contract đã triển khai
-CONTRACT_ADDRESS = ''
-
-# ABI của smart contract
-CONTRACT_ABI = [
-    {
-        # "inputs": [
-        #     {"name": "tokenHash", "type": "bytes32"},
-        #     {"name": "encryptedData", "type": "string"}
-        # ],
-        # "name": "storeCertificate",
-        # "outputs": [],
-        # "stateMutability": "nonpayable",
-        # "type": "function"
-    }
-]
 
 # Cấu trúc dữ liệu chứng chỉ
 class Certificate:
@@ -30,10 +17,10 @@ class Certificate:
                  issue_date, certificate_id, signature_of_institution, 
                  degree_hash, degree_url):
         self.student_name = student_name
-        self.student_email = student_email
+        self.student_email = self.validate_email(student_email)
         self.degree_name = degree_name
         self.issuer_name = issuer_name
-        self.issue_date = issue_date
+        self.issue_date = self.validate_date(issue_date)
         self.certificate_id = certificate_id
         self.signature_of_institution = signature_of_institution
         self.degree_hash = degree_hash
@@ -41,6 +28,27 @@ class Certificate:
     
     def to_json(self):
         return json.dumps(self.__dict__)
+
+    @staticmethod
+    def validate_email(email):
+        regex = r'^\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        if re.match(regex, email):
+            return email
+        else:
+            raise ValueError("Invalid email format")
+
+    @staticmethod
+    def validate_date(date):
+        try:
+            # If date is an integer (timestamp), convert to date string
+            if isinstance(date, int):
+                datetime.fromtimestamp(date)
+                return date
+            # If date is a string, check its format
+            datetime.strptime(date, '%Y-%m-%d')
+            return date
+        except ValueError:
+            raise ValueError("Invalid date format. Expected 'YYYY-MM-DD' or Unix timestamp.")
 
 # Hàm mã hóa thông tin bằng AES
 def encrypt_data(data, key):
@@ -105,5 +113,7 @@ try:
     print(f"Token Hash: {result['token_hash']}")
     print(f"Encryption Key: {result['encryption_key']}")
     print(f"Transaction Hash: {result['tx_receipt']['transactionHash'].hex()}")
+    print(f"Transaction Receipt: {result['tx_receipt']}")
+    print(f"Contract Address: {CONTRACT_ADDRESS}")
 except Exception as e:
     print(f"An error occurred: {str(e)}")
