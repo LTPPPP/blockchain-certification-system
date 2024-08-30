@@ -5,17 +5,16 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from web3 import Web3
 from datetime import datetime
-from APII import CONTRACT_ABI, CONTRACT_ADDRESS
+from backend.services.config import CONTRACT_ABI, CONTRACT_ADDRESS
 
 # Kết nối đến mạng Ethereum (ví dụ: Ganache cho môi trường phát triển)
 w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
-
 
 # Cấu trúc dữ liệu chứng chỉ
 class Certificate:
     def __init__(self, student_name, student_email, degree_name, issuer_name, 
                  issue_date, certificate_id, signature_of_institution, 
-                 degree_hash, degree_url):
+                 degree_hash, degree_url, image_url):
         self.student_name = student_name
         self.student_email = self.validate_email(student_email)
         self.degree_name = degree_name
@@ -25,6 +24,7 @@ class Certificate:
         self.signature_of_institution = signature_of_institution
         self.degree_hash = degree_hash
         self.degree_url = degree_url
+        self.image_url = image_url
     
     def to_json(self):
         return json.dumps(self.__dict__)
@@ -40,11 +40,9 @@ class Certificate:
     @staticmethod
     def validate_date(date):
         try:
-            # If date is an integer (timestamp), convert to date string
             if isinstance(date, int):
                 datetime.fromtimestamp(date)
                 return date
-            # If date is a string, check its format
             datetime.strptime(date, '%Y-%m-%d')
             return date
         except ValueError:
@@ -87,12 +85,13 @@ def process_certificate(certificate):
     token_hash = create_hash(encrypted_data)
     
     # 4. Lưu trữ token trên blockchain
-    tx_receipt = store_on_blockchain(token_hash, encrypted_data)
+    # tx_receipt = store_on_blockchain(token_hash, encrypted_data)
     
     return {
         'token_hash': token_hash,
         'encryption_key': encryption_key.hex(),
-        'tx_receipt': tx_receipt
+        'encrypted_data': encrypted_data.hex(),
+        # 'tx_receipt': tx_receipt
     }
 
 # Sử dụng
@@ -105,15 +104,16 @@ certificate = Certificate(
     certificate_id="XYZ-2021-001",
     signature_of_institution="0x1234...5678",  # Giả định chữ ký số
     degree_hash="0xabcd...ef01",  # Hash của nội dung bằng cấp
-    degree_url="https://example.com/degrees/XYZ-2021-001"
+    degree_url="https://example.com/degrees/XYZ-2021-001",
+    image_url="https://example.com/certificates/images/XYZ-2021-001.png"  # URL của hình ảnh bằng cấp đã lưu trữ
 )
 
 try:
     result = process_certificate(certificate)
     print(f"Token Hash: {result['token_hash']}")
     print(f"Encryption Key: {result['encryption_key']}")
-    print(f"Transaction Hash: {result['tx_receipt']['transactionHash'].hex()}")
-    print(f"Transaction Receipt: {result['tx_receipt']}")
-    print(f"Contract Address: {CONTRACT_ADDRESS}")
+    print(f"Encrypted Data: {result['encrypted_data']}")
+    # print(f"Transaction Hash: {result['tx_receipt']['transactionHash'].hex()}")
+    # print(f"Transaction Receipt: {result['tx_receipt']}")
 except Exception as e:
     print(f"An error occurred: {str(e)}")
