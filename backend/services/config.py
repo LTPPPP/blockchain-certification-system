@@ -4,4 +4,5 @@ account_address = ""
 private_key = ""
 
 
-CONTRACT_ABI = # Path: backend/services/APII.py
+CONTRACT_ABI = []
+# Path: backend/services/APII.py
