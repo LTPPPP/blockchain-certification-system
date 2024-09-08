@@ -1,0 +1,90 @@
+.User__container {
+    height: 100vh;
+}
+
+
+/* User Info */
+.user__Info {
+    padding: 10px 0;
+    height: 100vh;
+    background-color: var(--primary-blue-color);
+}
+
+.user__name {
+    text-align: center;
+    color: var(--white-color);
+    font-size: 3.5rem;
+    line-height: 3.5rem;
+    font-weight: 600;
+}
+
+.user__code {
+    text-align: center;
+    color: var(--white-color);
+    font-size: 1.8rem;
+    line-height: 1.8rem;
+    font-weight: 600;
+    margin: 10px 0;
+    color: #6A6E79;
+}
+
+.user__content {
+    padding: 5px 20px;
+    font-size: 1.6rem;
+    line-height: 1.6rem;
+    font-weight: 600;
+}
+
+.user__content div {
+    margin: 20px 0;
+    color: var(--white-color);
+}
+
+.user__content span {
+    display: inline-block;
+    color: #6A6E79;
+    min-width: 65px;
+}
+
+/* Certification */
+.certification__container {
+    background-image: linear-gradient(to top, var(--primary-blue-color), var(--primary-green-color) 15%);
+    background-repeat: no-repeat;
+    padding: 20px 10px;
+
+}
+
+.certification__title {
+    padding: 0 15px;
+    margin: 5px 0;
+    font-size: 2rem;
+    line-height: 2rem;
+    font-weight: 600;
+    color: var(--white-color);
+}
+
+.certification__link {}
+
+
+.certification__link img {
+    display: block;
+    margin: 0 auto;
+    width: 90%;
+    cursor: pointer;
+}
+
+.certification__btn button {
+    padding: 10px 0;
+    margin: 5px 0;
+    color: var(--white-color);
+    width: 100%;
+    font-size: 2.5rem;
+    background-color: #6EB077;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.certification__btn button:hover {
+    background-color: #4f7f55;
+}

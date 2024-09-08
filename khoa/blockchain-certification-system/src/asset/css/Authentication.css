@@ -1,0 +1,102 @@
+.authentication__container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: linear-gradient(to bottom, var(--primary-black-color), var(--primary-blue-color) 10%);
+}
+
+.authentication__login {
+    display: none;
+    background-image: linear-gradient(to bottom, var(--primary-blue-color), var(--primary-green-color) 20%);
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: none;
+}
+
+.authentication__register {
+    background-image: linear-gradient(to bottom, var(--primary-blue-color), var(--primary-green-color) 20%);
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: none;
+}
+
+.authentication__title {
+    font-size: 5rem;
+    line-height: 5rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--white-color);
+}
+
+.authentication__description {
+    font-size: 1.8rem;
+    line-height: 2rem;
+    margin: 10px 0 30px;
+    color: var(--black-color);
+}
+
+.authentication__item {
+    position: relative;
+    margin: 30px 0;
+}
+
+.authentication__label {
+    position: absolute;
+    top: -15px;
+    left: 8px;
+    padding: 0 5px;
+    color: var(--white-color);
+    font-weight: 600;
+    font-size: 1.6rem;
+    line-height: 2rem;
+    background-color: var(--primary-green-color);
+}
+
+.authentication__inputContainer {
+    border-radius: 8px;
+    padding: 10px 5px;
+    border: 2px solid #09816E;
+}
+
+.authentication__inputContainer input {
+    color: var(--white-color);
+    font-size: 1.6rem;
+    width: 95%;
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+.authentication__inputContainer i {
+    display: inline-block;
+    font-size: 1.5rem;
+    color: var(--white-color);
+    cursor: pointer;
+}
+
+.login__btn button {
+    width: 100%;
+    padding: 5px 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    color: var(--white-color);
+    background-color: #09816E;
+    cursor: pointer;
+}
+
+.authentication__footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.authentication__footer a {
+    color: var(--primary-blue-color);
+    cursor: pointer;
+}
+
+.authentication__footer a:hover {
+    opacity: 0.8;
+}
