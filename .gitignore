@@ -1,3 +1,5 @@
 # Ignore APII.py
 backend/APII.py
 backend/services/APII.py
+
+.env

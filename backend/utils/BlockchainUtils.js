@@ -1,29 +1,14 @@
-const crypto = require('crypto');
+// utils/blockchainUtils.js
 const Web3 = require('web3');
+const contractABI = require('../blockchain/contractABI.json');
+const contractAddress = process.env.CONTRACT_ADDRESS;
 
-class BlockchainUtils {
-    static hashData(data) {
-        return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
-    }
+const web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_NODE));
 
-    static signData(data, privateKey) {
-        const web3 = new Web3();
-        const dataHash = this.hashData(data);
-        const signature = web3.eth.accounts.sign(dataHash, privateKey);
-        return signature.signature;
-    }
+const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-    static verifySignature(data, signature, publicAddress) {
-        const web3 = new Web3();
-        const dataHash = this.hashData(data);
-        const recoveredAddress = web3.eth.accounts.recover(dataHash, signature);
-        return recoveredAddress.toLowerCase() === publicAddress.toLowerCase();
-    }
-
-    static generateCertificateId(studentAddress, degreeName, issueDate) {
-        const data = `${studentAddress}-${degreeName}-${issueDate}`;
-        return this.hashData(data);
-    }
-}
-
-module.exports = BlockchainUtils;
+exports.writeToBlockchain = async (data) => {
+    const accounts = await web3.eth.getAccounts();
+    const result = await contract.methods.issueDiploma(data).send({ from: accounts[0] });
+    return result.transactionHash;
+};
